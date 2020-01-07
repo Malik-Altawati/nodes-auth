@@ -1,4 +1,4 @@
-const bycrypt = require('bcrypt')
+const bycrypt = require('bcryptjs')
 //change this constat to change the salt
 const passwordHasher = (plainPassword = '', saltRounds = 0, callback) => {
     if (!plainPassword.length) {

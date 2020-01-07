@@ -6,6 +6,10 @@ const { passwordHasher, passwordCompare } = require('../encryption/crypto')
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 const User = require('./controller/User');
+////////////////////////////////////////////////// by malik
+const Friend = require('./controller/Friend');
+const Pending = require('./controller/Pending');
+//
 
 
 //changed the port to avoid conflicts
@@ -17,27 +21,32 @@ var server = app.listen(port, () => {
 
 
 //abstract 
-var userFinder = (req, res, callback) => {
-    const { username } = req.body
+// var userFinder = (req, res, callback) => {
+//     const { username } = req.body
+//     User.find(username)
+//         .then((data) => {
+//             console.log(data, "user is found")
+//             if (data.rows && data.rows.length > 0) {
+//                 callback(null, data.rows)
+//             }
+//             else callback(Error("aaa"), null)
+//         })
+//         .catch(() => {
+//             res.status(404).send("user not found")
+//         })
+// }
+/////////////////////////////////////////////////////////////////////// changes by malik
+app.post('/get', (req, res) => {
+    var username = req.body.username
     User.find(username)
-        .then((data) => {
-            console.log(data)
-            if (data.rows && data.rows.length > 0) {
-                callback(null, data.rows)
-            }
-            else callback(Error("aaa"), null)
+        .then(() => {
+            console.log("user found")
+            res.status(200).send("created user");
         })
         .catch(() => {
-            res.status(404).send("user not found")
+            console.log("user not found")
+            res.status(403).send("user not found");
         })
-}
-
-app.post('/get', (req, res) => {
-    //need to work more on this condition
-    userFinder(req, res, (err, result) => {
-        if (err) res.sendStatus(300)
-        res.sendStatus(200).json(result)
-    })
 })
 
 app.post('/create', (req, res) => {
@@ -52,6 +61,87 @@ app.post('/create', (req, res) => {
         })
 })
 
+app.post('/update', (req, res) => {
+    var username = req.body.username
+    var password = req.body.password
+    User.update(username, password)
+        .then(() => {
+            console.log("password updated")
+            res.status(200).send("password updated");
+        })
+        .catch(() => {
+            console.log("password was not updated")
+            res.status(403).send("password was not updated");
+        })
+})
+
+app.post('/delete', (req, res) => {
+    var username = req.body.username
+    User.delete(username)
+        .then(() => {
+            console.log("user was deleted")
+            res.status(200).send("user was deleted");
+        })
+        .catch(() => {
+            console.log("error happened")
+            res.status(403).send("error happened");
+        })
+})
+/////////////////////////////////////////////////////////////////////////////////
+
+app.post('/bringFriends', (req, res) => {
+    var username = req.body.username
+    Friend.FriendsFinder(username)
+        .then((data) => {
+            console.log(data)
+            res.status(200).send(data);
+        })
+        .catch(() => {
+            console.log("error happened")
+            res.status(403).send("error happened");
+        })
+})
+////////////////////////////////////////////////////////////////////////////////////
+app.post('/showFriendRequests', (req, res) => {
+    var username = req.body.username
+    Pending.showRequests(username)
+        .then((data) => {
+            console.log(data)
+            res.status(200).send(data);
+        })
+        .catch(() => {
+            console.log("error ")
+            res.status(403).send("err at show friend requests");
+        })
+})
+app.post('/sendFriendRequest', (req, res) => {
+    var requester = req.body.requester
+    var target = req.body.target
+    Pending.sendFriendRequest(requester, target)
+        .then((data) => {
+            console.log("SENT")
+            res.status(200).send("sent");
+        })
+        .catch(() => {
+            console.log("error ")
+            res.status(403).send("err at sending friend requests");
+        })
+})
+
+app.post('/acceptFriendRequest', (req, res) => {
+    var requester = req.body.requester
+    var target = req.body.target
+    Pending.acceptRequest(requester, target)
+        .then((data) => {
+            console.log("accepted")
+            res.status(200).send("accepted");
+        })
+        .catch(() => {
+            console.log("error ")
+            res.status(403).send("err at accepting friend requests");
+        })
+})
+/////////////////////////////////////////////////////////////////////////////////// malik stopped here
 app.post('/signup', (req, res) => {
     //1   take username
     //2   password
